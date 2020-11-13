@@ -30,8 +30,6 @@ int main()
 {
 	DDRB = 0xff;  // all outputs
 	PORTB = 0xff; // active LOW (see circuit)
-	DDRC = 0x00;
-	PORTC = 0x00;
 	initADC();
 // otherwise routine stops
 	while (1) {
