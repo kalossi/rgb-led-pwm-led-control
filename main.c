@@ -19,7 +19,9 @@ void initPWM()
 	TCCR2B |= (1 << WGM22);
 // No prescaler: CS22, CS21 and CS20 = 001
 	TCCR2B |= (1 << CS20);
+// enable interrupt on timer/counter 2A
 	TIMSK2 |= (1 << OCIE2A);
+// initial compare value
 	OCR2A = 5;
 }
 
@@ -30,16 +32,17 @@ uint8_t readADCH(uint8_t ADCchannel)
 //single conversion mode, ADC prescaler 8
 	ADCSRA |= (1 << ADSC) | (1 << ADPS1);  //start conversion
 // wait until ADC conversion is complete
-	// while (!(ADCSRA & (1 << ADIF))) {
-	// }
+	while (!(ADCSRA & (1 << ADIF))) {
+	}
 // clear flag
 	ADCSRA |= (1 << ADIF);
 // return the 8 msb of ADC register
-	return ADCH;
+	return ADCH - 1;
 }
 
 int main()
 {
+	CLKPR |= (1 << CLKPCE) | (1 << CLKPS3) | (0 << CLKPS2) | (0 << CLKPS1) | (0 << CLKPS0);
 	DDRB = 0xff; // all outputs
 	PORTB = 0x00;
 	DDRD = 0xff;  // all outputs
@@ -58,10 +61,10 @@ int main()
 ISR (TIMER2_COMPA_vect)
 {
 // change the timer compare register 2A to match the 8 bits of ADCH register
-	OCR2A = readADCH(0);
+	OCR2A = ~(readADCH(0));
 }
 
 // ISR (ADC_vect)
 // {
-// 	PORTD = ~(readADCH(0));
+// 	OCR2A = (readADCH(0));
 // }
